@@ -1,12 +1,15 @@
 import streamlit as st
 from id import get_youtube_video_ids_selenium
+from youtube_transcript_api import YouTubeTranscriptApi
+
+ytt_api = YouTubeTranscriptApi()
 
 
 st.markdown(
     """
     <style>
     .stApp {
-        background-image: url("https://images.wallpaperscraft.com/image/single/solid_colors_stains_18571_300x168.jpg");
+        background-image: url("https://sjunkins.wordpress.com/wp-content/uploads/2012/04/the-best-top-desktop-hd-dark-black-wallpapers-dark-black-wallpaper-dark-background-dark-wallpaper-23.jpg?w=900");
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
@@ -29,6 +32,17 @@ if button:
     st.markdown(url)
     ids = get_youtube_video_ids_selenium(url)
     # st.write(ids)
+    d = {}
+    # ls = []
     for i in ids:
-        st.write(f'https://www.youtube.com/watch?v={i}')
-        st.video(f'https://www.youtube.com/watch?v={i}')
+        ls = []
+        video_link = f'https://www.youtube.com/watch?v={i}'
+        fetched_transcript = ytt_api.fetch(i,  languages=['hi', 'en'])
+        for snippet in fetched_transcript:
+            # st.markdown(snippet.text)
+            ls.append(snippet.text)
+        d[i] = ls
+        st.write(d)
+        st.write(video_link)
+        st.video(video_link)
+    # print(d)
