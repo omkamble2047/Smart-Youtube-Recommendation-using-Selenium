@@ -1,0 +1,128 @@
+/* Reset default margins and paddings */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Winky Rough", sans-serif;
+}
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  height: 100vh;
+  background-image: url("images/bg1.jpg");
+  background-size: cover;         /* Makes the image cover the whole screen */
+    background-position: center;    /* Centers the image */   background-repeat: no-repeat;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #333;
+}
+
+.form-container {
+  background: #ffffff;
+  padding: 40px 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  width: 350px;
+  text-align: center;
+}
+
+.form-container h2 {
+  margin-bottom: 20px;
+  color: #1e3c72;
+  font-size: 26px;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: border 0.3s;
+}
+
+input:focus {
+  border-color: #1e3c72;
+}
+
+button {
+  width: 100%;
+  background-color: #1e3c72;
+  color: white;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  margin-top: 15px;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #16335f;
+}
+
+p {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+a {
+  color: #1e3c72;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 40px; /* Space for the eye icon */
+}
+
+.password-container .eye {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 18px;
+  color: #1e3c72;
+}
+
+.navbar {
+  position: absolute;
+  top: 20px;       /* space from top */
+  right: 40px;     /* space from right */
+  display: flex;
+  gap: 30px;       /* spacing between links */
+  font-weight: bold;
+  font-size: 18px;
+}
+
+.navbar a {
+    font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+  color: #0b0b8f;
+  text-decoration: none;
+  margin: 0 20px;
+}
+
+.navbar a:hover {
+  color: #ff6600;  /* highlight on hover */
+}
+/* .poppins-bold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+} */
+
