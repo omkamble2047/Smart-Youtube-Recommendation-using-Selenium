@@ -1,18 +1,19 @@
-# import streamlit as st
-from id import get_youtube_video_ids_selenium
-from youtube_transcript_api import YouTubeTranscriptApi
-
-ytt_api = YouTubeTranscriptApi()
-
-
 from flask import Flask, render_template, request, redirect, session, flash
-import sqlite3
-import os
+import sqlite3, os
+from youtube_transcript_api import YouTubeTranscriptApi
+from id import get_youtube_video_ids_selenium
+import google.generativeai as genai
 
+# Flask setup
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'
 
-# Create database if not exists
+# Gemini setup
+genai.configure(api_key="AIzaSyCOjTarmwkiG8BlrmaRZh7K5VuV5xQOFG4")  
+model = genai.GenerativeModel("gemini-1.5-flash")
+
+
+# Create DB if not exists
 def init_db():
     if not os.path.exists('users.db'):
         with sqlite3.connect('users.db') as conn:
@@ -24,9 +25,11 @@ def init_db():
                 );
             ''')
 
+
 @app.route('/')
 def home():
     return redirect('/login')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -39,10 +42,11 @@ def login():
             user = cur.fetchone()
             if user:
                 session['username'] = username
-                return redirect('/dashboard')
+                return redirect('/learn')
             else:
                 flash("Invalid login")
     return render_template('login.html')
+
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -58,59 +62,60 @@ def signup():
             flash("Username already exists")
     return render_template('signup.html')
 
-@app.route('/dashboard')
-def dashboard():
+@app.route('/learn', methods=['GET', 'POST'])
+def lear():
     if 'username' not in session:
         return redirect('/login')
-    return render_template('dashboard.html', user=session['username'])
+
+    summaries = []
+    if request.method == 'POST':
+        topic = request.form['topic']
+        url = f"https://www.youtube.com/results?search_query={topic.replace(' ', '+').lower()}&sp=EgIIBA%253D%253D"
+        ids = get_youtube_video_ids_selenium(url)[:5]  # Limit to top 5
+
+        for vid in ids:
+            try:
+                transcript = YouTubeTranscriptApi.get_transcript(vid, languages=['en', 'hi'])
+                text = " ".join([t['text'] for t in transcript])
+            except Exception as e:
+                text = f"Transcript not available ({e})"
+
+            prompt = f"""
+            Summariztion Of The Video Is Not Possible As Video Has No Captions!
+
+            Transcript:
+            {text[:6000]}
+            """
+
+            response = model.generate_content(prompt)
+            summary_text = response.text
+
+            # Extract clarity score
+            clarity_score = 5
+            for word in summary_text.split():
+                if word.isdigit() and 1 <= int(word) <= 10:
+                    clarity_score = int(word)
+                    break
+
+            summaries.append({
+                "video_id": vid,
+                "link": f"https://www.youtube.com/watch?v={vid}",
+                "summary": summary_text,
+                "clarity_score": clarity_score
+            })
+
+        # Sort by clarity (highest first)
+        summaries = sorted(summaries, key=lambda x: x['clarity_score'], reverse=True)
+
+    return render_template('learn.html', user=session['username'], summaries=summaries)
+
 
 @app.route('/logout')
 def logout():
     session.pop('username', None)
     return redirect('/login')
 
+
 if __name__ == '__main__':
     init_db()
     app.run(debug=True)
-
-# st.markdown(
-#     """
-#     <style>
-#     .stApp {
-#         background-image: url("https://sjunkins.wordpress.com/wp-content/uploads/2012/04/the-best-top-desktop-hd-dark-black-wallpapers-dark-black-wallpaper-dark-background-dark-wallpaper-23.jpg?w=900");
-#         background-size: cover;
-#         background-repeat: no-repeat;
-#         background-attachment: fixed;
-#     }
-#     </style>
-#     """,
-#     unsafe_allow_html=True
-# )
-
-# # Streamlit UI
-# st.header('Smart YouTube Recommendation')
-
-# labels = st.text_input("Enter the topics to receive best recommendations")
-# labels = labels.replace(' ','+').lower()
-# button = st.button("Submit")
-
-# url = f"https://www.youtube.com/results?search_query={labels}&sp=EgIIBA%253D%253D"
-
-# if button:
-#     st.markdown(url)
-#     ids = get_youtube_video_ids_selenium(url)
-#     # st.write(ids)
-#     d = {}
-#     # ls = []
-#     for i in ids:
-#         ls = []
-#         video_link = f'https://www.youtube.com/watch?v={i}'
-#         fetched_transcript = ytt_api.fetch(i,  languages=['hi', 'en'])
-#         for snippet in fetched_transcript:
-#             # st.markdown(snippet.text)
-#             ls.append(snippet.text)
-#         d[i] = ls
-#         st.write(d)
-#         st.write(video_link)
-#         st.video(video_link)
-#     # print(d)
